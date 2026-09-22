@@ -1,0 +1,6 @@
+-- The tutor/ask smoke test created one extra chat session; the seed only ships
+-- the 'seed-session-recursion' conversation for the demo account. This scoped
+-- delete removes just that test session's two messages.
+delete from chat_messages
+where user_id = (select id from users where email = 'sridhar@edumind.dev')
+  and session_id <> 'seed-session-recursion';

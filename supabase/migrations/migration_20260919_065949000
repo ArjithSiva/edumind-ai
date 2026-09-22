@@ -1,0 +1,46 @@
+-- Restore the seeded demo dataset after verification testing.
+-- Scoped to throwaway test artifacts created in this session, in tables this
+-- project created (the Cloud was empty before this task started).
+
+-- 1. throwaway accounts created by the registration test (cascades to their
+--    goals, tasks, quizzes and attempts)
+delete from users where email like 'verify-%@edumind.dev';
+
+-- 2. the two 0%-score attempts created by the quiz-submit tests
+--    (no seeded attempt has a 0% score)
+delete from attempts
+where user_id = (select id from users where email = 'sridhar@edumind.dev')
+  and percentage = 0;
+
+-- 3. ad-hoc quizzes generated during testing; the seeded bank has user_id null
+--    so it is untouched, and no remaining attempt references these
+delete from quizzes where user_id = (select id from users where email = 'sridhar@edumind.dev');
+
+-- 4. the doubt posted during verification (its AI answer cascades)
+delete from doubts where title = 'Why does a stack overflow happen in deep recursion?';
+
+-- 5. AI-generated assignments created during verification; the seeded one stays
+delete from assignments
+where user_id = (select id from users where email = 'sridhar@edumind.dev')
+  and title like 'Memoization%';
+
+-- 6. AI-generated career plans; the seeded plan has an empty recommendations array
+delete from career_plans
+where user_id = (select id from users where email = 'sridhar@edumind.dev')
+  and jsonb_array_length(recommendations) > 0;
+
+-- 7. restore the exact six seeded tasks for the demo account
+delete from tasks where user_id = (select id from users where email = 'sridhar@edumind.dev');
+
+insert into tasks (user_id, title, subject, topic, scheduled_for, duration_minutes, priority, completed, completed_at, auto_scheduled, note)
+select id, 'Python — loops and iteration', 'Python', 'Python — Loops and Iteration', now() + interval '-2 days', 45, 2, true, now() + interval '-2 days', false, 'Scored 90% on the follow-up quiz' from users where email = 'sridhar@edumind.dev'
+union all
+select id, 'Revise Recursion — base cases and the call stack', 'Data Structures', 'Recursion', now(), 45, 1, false, null, true, 'Moved to today automatically — your average here is 40%' from users where email = 'sridhar@edumind.dev'
+union all
+select id, 'Data Structures — stacks and queues', 'Data Structures', 'Stacks and Queues', now() + interval '1 days', 60, 2, false, null, false, 'Builds directly on recursion' from users where email = 'sridhar@edumind.dev'
+union all
+select id, 'SQL joins — inner vs left', 'DBMS', 'SQL Joins', now() + interval '2 days', 45, 1, false, null, true, 'Second weakest topic — scheduled before the weekend' from users where email = 'sridhar@edumind.dev'
+union all
+select id, 'React — components and state', 'Web Development', 'React Fundamentals', now() + interval '3 days', 60, 3, false, null, false, 'Your strongest area — keeping it warm' from users where email = 'sridhar@edumind.dev'
+union all
+select id, 'Mixed practice: 10 MCQs across all subjects', 'Python', 'Revision', now() + interval '4 days', 30, 3, false, null, false, 'Weekly mixed revision block' from users where email = 'sridhar@edumind.dev';
