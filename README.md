@@ -95,14 +95,6 @@ apart, or upgrade the Groq tier.
 
 ---
 
-## Project URLs
-
-**Live app:** https://<project-id>-latest.preview.enter.pro  
-**Edit & build in Enter:** https://enter.pro/project/<project-id>
-
-
----
-
 ## Continue building
 
 Keep developing your app directly in [Enter.pro](https://enter.pro/project/<project-id>).  
